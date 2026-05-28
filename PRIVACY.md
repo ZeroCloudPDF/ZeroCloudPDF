@@ -38,9 +38,9 @@ We do not use:
 - ❌ Server-side logs of conversion activity
 - ❌ Error telemetry from conversion tools
 - ❌ Advertising cookies or retargeting pixels
-- ❌ Third-party analytics on tool pages beyond GA4
+- ❌ Third-party analytics beyond GA4
 
-**CDN loading note:** Our processing libraries (pdf.js, jsPDF, mammoth.js, html2canvas) load from **cdnjs.cloudflare.com**. Firebase Auth loads from **gstatic.com**. These CDNs may log IP addresses and request timestamps per their own policies. We do not control or receive those logs.
+**CDN loading note:** Our processing libraries (pdf.js, jsPDF, mammoth.js, html2canvas) load from **cdnjs.cloudflare.com**. Firebase Auth loads from **gstatic.com**. Google Fonts load from **fonts.googleapis.com** and **fonts.gstatic.com**. These CDNs may log IP addresses and request timestamps per their own policies. We do not control or receive those logs.
 
 ---
 
@@ -84,8 +84,8 @@ When you upload to the Vault:
 ## 4. Data Retention & Deletion
 
 ### 4.1 Retention Period
+- **A 25 MB free storage quota is enforced per account.** Uploads that would exceed this limit are rejected. Your current usage is visible in the Vault UI.
 - **No automatic deletion.** Files persist indefinitely until you delete them.
-- **No storage quotas** are enforced at this time.
 - **No lifecycle rules** are configured on our GCS buckets.
 
 ### 4.2 How to Delete
@@ -110,14 +110,14 @@ As an Indian-founded service, we acknowledge obligations under the **Digital Per
 - **Consent:** Vault usage constitutes explicit consent for processing and storage of file data.
 - **Purpose limitation:** File data is used only for storage, retrieval, and thumbnail generation.
 - **Data principal rights:** You may request deletion of your account data by emailing privacy@zerocloudpdf.com.
-- **Grievance officer:** Contact details below.
+- **Grievance officer:** See Section 10. **Must be populated with a real name and Indian address before this policy is legally enforceable under DPDP Act 2023.**
 
 ### 5.2 GDPR (EU/EEA Visitors)
 For visitors from the European Union:
 - **Lawful basis:** Consent (Vault) and legitimate interest (security, fraud prevention).
 - **Right to erasure:** You may request deletion of all personal data.
 - **Right to access:** You may request a copy of data we hold about you.
-- **International transfer:** File data is stored in Google Cloud (region: `asia-south1` and multi-region US). This constitutes a transfer outside the EEA. GCS Standard Contractual Clauses apply.
+- **International transfer:** File data is stored in Google Cloud (region: `asia-south1` and multi-region US). This constitutes a transfer outside the EEA. Google Cloud's standard terms include Standard Contractual Clauses for international transfers. **We have not executed a separate Data Processing Agreement with Google Cloud.**
 
 ---
 
@@ -132,6 +132,7 @@ For visitors from the European Union:
 | Cloud Run (generate-thumbnail) | Google | Thumbnail generation | Full file content (temporarily) |
 | CDN (cdnjs.cloudflare.com) | Cloudflare | Library delivery | IP address, user agent (CDN logs) |
 | CDN (gstatic.com) | Google | Firebase Auth library delivery | IP address, user agent (CDN logs) |
+| Google Fonts | Google | Typography | IP address, user agent (CDN logs) |
 
 We have **no Data Processing Agreements** beyond the standard Google Cloud Terms of Service. We are not a Google Cloud enterprise customer.
 
@@ -172,7 +173,9 @@ We will update this policy if:
 **GitHub Discussions:** https://github.com/ZeroCloudPDF/ZeroCloudPDF/discussions/categories/privacy-compliance
 
 **Grievance Officer (India):**  
-[Founder name and address to be added]  
+⚠️ **REQUIRED FOR DPDP ACT 2023 COMPLIANCE — MUST BE POPULATED BEFORE PUBLICATION**  
+Name: [Founder name to be added]  
+Address: [Indian address to be added]  
 Email: privacy@zerocloudpdf.com
 
 ---
