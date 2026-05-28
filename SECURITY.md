@@ -20,6 +20,8 @@ No file ever leaves your device during conversion.
 
 ¹ Native HEIC decoding is supported on Safari and iOS only. Chrome and Firefox desktop do not natively decode HEIC; conversions may silently fail or produce blank output.
 
+**External dependencies:** Google Fonts (fonts.googleapis.com, fonts.gstatic.com) load on every page for typography. These requests may expose IP addresses and user agents to Google. They do not contain file data.
+
 **Verification:** Open DevTools → Network tab. Perform any conversion. You will see zero outbound requests containing file data. We call this the **Zero Server Contact Verification**.
 
 ---
