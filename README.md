@@ -4,7 +4,6 @@
 &gt; Zero uploads. Zero servers. Zero trust required.
 
 [![Website](https://img.shields.io/badge/Website-zerocloudpdf.com-00b894?style=flat-square)](https://zerocloudpdf.com)
-[![Blog](https://img.shields.io/badge/Blog-WordPress-21759b?style=flat-square)](https://zerocloudpdf.wordpress.com/2026/05/24/zerocloudpdf-vs-smallpdf-ilovepdf-adobe-a-privacy-first-architecture-comparison/)
 [![German](https://img.shields.io/badge/Article-Deutsch-brightgreen?style=flat-square)](https://zerocloudpdf.blogspot.com/2026/05/zerocloudpdf-vs-smallpdf-ilovepdf-pdf24.html)
 [![Hashnode](https://img.shields.io/badge/Article-Hashnode-2962ff?style=flat-square)](https://zerocloudpdf.hashnode.dev/i-analyzed-the-privacy-architecture-of-popular-pdf-tools-here-s-why-i-built-a-browser-first-alternative)
 
@@ -56,8 +55,6 @@ If it works offline, your file never touched `eth0`. Try that on any competitor.
 | PDF24 (Web) | ✅ Yes | German server | Temporary | No |
 | Online2PDF | ✅ Yes | German server | Temporary | No |
 | **ZeroCloudPDF** | **❌ Never** | **Your browser** | **Instant discard** | **Never** |
-
-Full analysis: [Privacy Architecture Comparison](https://zerocloudpdf.wordpress.com/2026/05/24/zerocloudpdf-vs-smallpdf-ilovepdf-adobe-a-privacy-first-architecture-comparison/)
 
 German localization: [Deutschsprachiger Vergleich](https://zerocloudpdf.blogspot.com/2026/05/zerocloudpdf-vs-smallpdf-ilovepdf-pdf24.html)
 
