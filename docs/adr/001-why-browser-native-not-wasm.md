@@ -107,7 +107,6 @@ The following ADRs are planned but not yet written:
 ## 9. References
 
 - [ZeroCloudPDF Website](https://zerocloudpdf.com)
-- [Privacy Architecture Comparison](https://zerocloudpdf.wordpress.com/2026/05/24/zerocloudpdf-vs-smallpdf-ilovepdf-adobe-a-privacy-first-architecture-comparison/)
 - [Mozilla pdf.js](https://github.com/mozilla/pdf.js)
 - [jsPDF](https://github.com/parallax/jsPDF)
 - [mammoth.js](https://github.com/mwilliamson/mammoth.js)
