@@ -2,7 +2,6 @@
 
 **Last updated:** 2026-05-28  
 **Effective date:** 2026-05-28  
-**Jurisdiction:** India (compliance with Digital Personal Data Protection Act, 2023)
 
 ---
 
@@ -104,15 +103,7 @@ If you delete your Firebase account **without first deleting Vault files**, the 
 
 ## 5. Legal Basis & Compliance
 
-### 5.1 India — DPDP Act 2023
-As an Indian-founded service, we acknowledge obligations under the **Digital Personal Data Protection Act, 2023**:
-
-- **Consent:** Vault usage constitutes explicit consent for processing and storage of file data.
-- **Purpose limitation:** File data is used only for storage, retrieval, and thumbnail generation.
-- **Data principal rights:** You may request deletion of your account data by emailing privacy@zerocloudpdf.com.
-- **Grievance officer:** See Section 10. **Must be populated with a real name and Indian address before this policy is legally enforceable under DPDP Act 2023.**
-
-### 5.2 GDPR (EU/EEA Visitors)
+### 5.1 GDPR (EU/EEA Visitors)
 For visitors from the European Union:
 - **Lawful basis:** Consent (Vault) and legitimate interest (security, fraud prevention).
 - **Right to erasure:** You may request deletion of all personal data.
@@ -171,12 +162,6 @@ We will update this policy if:
 **Privacy inquiries:** privacy@zerocloudpdf.com  
 **Security issues:** security@zerocloudpdf.com  
 **GitHub Discussions:** https://github.com/ZeroCloudPDF/ZeroCloudPDF/discussions/categories/privacy-compliance
-
-**Grievance Officer (India):**  
-⚠️ **REQUIRED FOR DPDP ACT 2023 COMPLIANCE — MUST BE POPULATED BEFORE PUBLICATION**  
-Name: [Founder name to be added]  
-Address: [Indian address to be added]  
-Email: privacy@zerocloudpdf.com
 
 ---
 
