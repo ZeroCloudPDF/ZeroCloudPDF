@@ -118,8 +118,8 @@ We do not set `Cache-Control` headers (we do not control the CDN). We do not use
 
 - [ADR-001: Why Browser-Native, Not WebAssembly](001-why-browser-native-not-wasm.md)
 - [ADR-003: Zero Server Contact Verification Methodology](003-zero-server-contact-verification.md)
-- [SECURITY.md](../SECURITY.md)
-- [PRIVACY.md](../PRIVACY.md)
+- [SECURITY.md]([../SECURITY.md](https://github.com/ZeroCloudPDF/ZeroCloudPDF/blob/main/PRIVACY.md))
+- [PRIVACY.md]([../PRIVACY.md](https://github.com/ZeroCloudPDF/ZeroCloudPDF/blob/main/PRIVACY.md))
 
 ---
 
