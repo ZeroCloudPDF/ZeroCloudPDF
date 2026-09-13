@@ -67,7 +67,12 @@ Both options keep files local. Both satisfy the "zero server contact" requiremen
 
 The auditability and debuggability advantages of plain JS outweigh the raw performance benefits of WASM for our use case. ZeroCloudPDF's value proposition is **"you can verify this yourself in 30 seconds."** A `.wasm` binary breaks that promise — it asks users to trust a black box. Plain JavaScript makes the architecture **falsifiable**.
 
-ZeroCloudPDF does not use WebAssembly in any processing path. All conversion logic is pure JavaScript.
+**Exception:** For Protect/Unlock PDF tools only, we use `qpdf.js` (a WebAssembly module) because 256-bit AES encryption requires cryptographic primitives not available in pure JavaScript libraries. This WASM module is:
+- Loaded on-demand only when the user accesses the Protect/Unlock tool
+- Auditable via source maps and open source code
+- Used strictly for encryption/decryption — no network calls, no data exfiltration
+
+All other conversion and editing logic remains pure JavaScript.
 
 ## 5. Consequences
 
@@ -79,7 +84,8 @@ ZeroCloudPDF does not use WebAssembly in any processing path. All conversion log
 
 ### Negative / Mitigations
 - **Performance ceiling:** For documents above 50 MB, JS is slower than WASM would be. Mitigation: we optimize for the 90th percentile (documents under 50 MB) and use `OffscreenCanvas` + `requestIdleCallback` to keep the main thread responsive.
-- **Bundle size:** Processing libraries (`pdf.js`, `jsPDF`, `mammoth.js`) are loaded via deferred `<script>` tags on every page load. `defer` ensures they do not block HTML parsing, but they do download with the initial page request. This is a trade-off: users pay the download cost once up front, but every tool is instantly ready without additional network round-trips after the first load.
+- **Bundle size:** Processing libraries (`pdf.js`, `jsPDF`, `mammoth.js`) are loaded on-demand per tool via dynamic `import()`, not via deferred `<script>` tags on every page load. This ensures users only download the libraries they actually need for their current task.
+- **WASM exception for encryption:** The Protect/Unlock PDF tools use `qpdf.js` (WASM) for 256-bit AES encryption. This is a deliberate, documented exception — the module is loaded only when needed and auditable via source maps.
 - **Feature gaps:** For edge-case PDFs (certain embedded fonts, XFA forms), JS libraries may fail where C++ would succeed. We accept this trade-off and document known limitations transparently.
 
 ## 6. Validation
@@ -102,7 +108,9 @@ The following ADRs are planned but not yet written:
 
 ## 8. Future Improvements
 
-- **Migrate library loading from deferred `<script>` tags to dynamic `import()` per tool**, so `pdf.js`, `jsPDF`, and `mammoth.js` only download when the relevant tool tab is first used. This ADR should be updated when that change ships.
+This ADR has been superseded in part by the implementation of on-demand library loading and the documented WASM exception for encryption. See:
+- Dynamic `import()` implementation for per-tool library loading (completed)
+- `qpdf.js` integration for Protect/Unlock PDF tools (completed)
 
 ## 9. References
 

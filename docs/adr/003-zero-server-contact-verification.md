@@ -49,40 +49,40 @@ Load `https://zerocloudpdf.com` (or the relevant tool page). Observe the Network
 | Request | Purpose | Contains File Data? |
 |---|---|---|
 | `gtag/js?id=G-ESZCDHN3HT` | Google Analytics 4 page tracking | No |
-| `firebase/8.10.0/firebase-app.js` | Firebase Auth library | No |
-| `firebase/8.10.0/firebase-auth.js` | Firebase Auth library | No |
-| `jspdf/2.5.1/jspdf.umd.min.js` | PDF generation library | No |
-| `pdf.js/3.11.174/pdf.min.js` | PDF rendering library | No |
-| `mammoth/1.6.0/mammoth.browser.min.js` | Word-to-PDF library | No |
-| `html2canvas/1.4.1/html2canvas.min.js` | **Only if Word Image mode is triggered** | No |
+| `jspdf/2.5.1/jspdf.umd.min.js` | PDF generation library (loaded on-demand) | No |
+| `pdf.js/3.11.174/pdf.min.js` | PDF rendering library (loaded on-demand) | No |
+| `mammoth/1.6.0/mammoth.browser.min.js` | Word-to-PDF library (loaded on-demand) | No |
+| `qpdf.js/qpdf.min.js` + `.wasm` | **Only for Protect/Unlock PDF tools** | No |
 
 **What to verify:**
-- `html2canvas` does **not** appear on initial page load. It is injected dynamically only when Word Image mode is selected.
+- Libraries are loaded on-demand via dynamic `import()` when a tool is first used, not on initial page load.
+- `qpdf.js` (WASM) appears **only** when accessing the Protect/Unlock PDF tool.
 - No request contains file data, file metadata, or conversion parameters.
+- Firebase libraries are **not** loaded for PDF tools (Vault is separate and unlisted).
 
 ---
 
 ### 3.3 Step 2: Isolate the Conversion
 
-**Do not log into the Vault.** Stay on the public tool page.
+Stay on the public tool page (Vault is unlisted and separate).
 
 Select a tool and upload a test file. Watch the Network tab during the entire conversion.
 
 **What you should see:**
 - **Zero new network requests** containing your file.
+- Libraries may load on-demand via `import()` if this is the first time using that tool.
 - The only new requests may be:
   - GA4 `collect` pings (anonymous page metrics, no file content)
-  - Firebase Auth heartbeat (only if you are logged in)
 
 **What to look for (red flags):**
 | Red Flag | Meaning |
 |---|---|
 | `POST` or `PUT` request with `Content-Type: multipart/form-data` | File uploaded to server |
-| `fetch()` to non-CDN domain with payload &gt; 1 KB | File data transmitted |
+| `fetch()` to non-CDN domain with payload > 1 KB | File data transmitted |
 | WebSocket connection opened | Real-time data streaming |
-| WebAssembly `.wasm` file downloaded | WASM processing path active |
+| WebAssembly `.wasm` file downloaded (except for Protect/Unlock PDF) | Unexpected WASM usage |
 
-**ZeroCloudPDF exhibits none of these during conversion.**
+**ZeroCloudPDF exhibits none of these during conversion.** For Protect/Unlock PDF tools, `qpdf.js` WASM loading is expected and auditable.
 
 ---
 
@@ -124,22 +124,39 @@ For developers who want to verify at the source level, inspect these functions i
 | Function | What to Verify |
 |---|---|
 | `wordToPdf()` | Uses `mammoth.convertToHtml()` on a local `ArrayBuffer`. No `fetch()`. |
-| `wordToPdfImage()` | Injects `html2canvas` dynamically, then renders a local DOM clone. No `fetch()`. |
 | `mergePdfs()` | Uses `pdfjsLib.getDocument()` + `jsPDF`. No `fetch()`. |
-| `pdfToImages()` | Uses `pdfjsLib.getDocument()` + `&lt;canvas&gt;`. No `fetch()`. |
+| `pdfToImages()` | Uses `pdfjsLib.getDocument()` + `<canvas>`. No `fetch()`. |
 | `finishPdf()` | Creates `URL.createObjectURL(blob)`. Triggers download via `anchor.click()` (Safari), `window.open()` (Chrome/Firefox), or a persistent download button (iOS). No `fetch()`. |
 | `initPdfTool()` | Dispatches all image-to-PDF, compress, merge, Word, and PDF-to-image conversions based on the active ribbon tab or current pathname. No `fetch()`. |
 
-**Global check:** Search `app.js` for `fetch(`, `XMLHttpRequest`, `WebSocket(`, `.wasm`. The only `fetch()` calls should be in Vault-related functions (`uploadSingle`, `loadGallery`, and the download confirm handler, including a direct `fetch()` to signed GCS URLs when downloading Vault files).
+**Global check:** Search `app.js` for `fetch(`, `XMLHttpRequest`, `WebSocket(`. There should be **zero** such calls in PDF tool code paths. The Vault feature (unlisted, separate) may contain `fetch()` calls for GCS operations, but no PDF tool interacts with it.
+
+**WASM verification:** For Protect/Unlock PDF tools, search for `qpdf` imports. The WASM module is loaded via dynamic `import()` only when that tool is accessed.
 
 ---
 
 ## 4. Library Loading Verification
 
-### 4.1 Static Script Tags (Deferred)
-The following libraries load via `&lt;script defer&gt;` on every page load:
+### 4.1 Dynamic Imports (On-Demand Loading)
+Libraries are now loaded via dynamic `import()` only when a tool is first used:
 
-```html
-&lt;script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"&gt;&lt;/script&gt;
-&lt;script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"&gt;&lt;/script&gt;
-&lt;script defer src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"&gt;&lt;/script&gt;
+```javascript
+// Example: Load jsPDF only when needed
+const { jsPDF } = await import('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/+esm');
+
+// Example: Load qpdf.js only for Protect/Unlock PDF
+const qpdf = await import('https://cdn.jsdelivr.net/npm/qpdf-wasm@1.0.0/+esm');
+```
+
+**Benefits:**
+- Users only download libraries they actually use
+- Faster initial page load
+- Clearer audit trail in Network tab (library load = tool usage)
+
+### 4.2 CDN Sources
+| Library | Primary CDN | Fallback CDN |
+|---|---|---|
+| jsPDF | cdnjs.cloudflare.com | cdn.jsdelivr.net |
+| pdf.js | cdnjs.cloudflare.com | cdn.jsdelivr.net |
+| mammoth.js | cdnjs.cloudflare.com | cdn.jsdelivr.net |
+| qpdf.js (WASM) | cdn.jsdelivr.net | N/A |
