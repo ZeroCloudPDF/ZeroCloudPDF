@@ -91,8 +91,6 @@ To avoid scope confusion, every statement below applies to all PDF conversion an
 - ❌ **No logging** of filenames, file sizes, or content types by any PDF tool
 - ❌ **No error telemetry** that transmits file data
 
-**Note:** zerocloudpdf.com also runs a separate, unlisted legacy feature (a private cloud vault) that does use Firebase Authentication and Google Cloud Storage for its own account holders. It is not linked anywhere on the site, is not under active development, and no PDF tool interacts with it in any way.
-
 ---
 
 ## 5. Supported Versions
