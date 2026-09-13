@@ -30,7 +30,7 @@ We use **Google Analytics 4 (GA4)** with tracking ID `G-ESZCDHN3HT` to collect a
 ### 2.2 Google Fonts
 This site uses **Google Fonts** loaded from `fonts.googleapis.com` and `fonts.gstatic.com` for typography. These requests may expose your IP address and user agent to Google per their CDN policies. No file data is transmitted.
 
-### 2.3 What We Do NOT Collect (Beyond the Unlisted Legacy Vault Feature Described in §2.4)
+### 2.3 What We Do NOT Collect
 We do not use:
 
 - ❌ Mixpanel or any additional visitor tracking scripts beyond GA4
@@ -39,13 +39,11 @@ We do not use:
 - ❌ Error telemetry from conversion tools
 - ❌ Advertising cookies or retargeting pixels
 - ❌ Third-party analytics beyond GA4
-- ❌ User authentication or account systems (for PDF tools)
-- ❌ File storage or cloud upload capabilities (for PDF tools)
+- ❌ User authentication or account systems
+- ❌ File storage or cloud upload capabilities
 
-### 2.4 Legacy Vault Feature (Unlisted, Not Promoted)
-zerocloudpdf.com also operates a separate, unlisted account-based storage feature (not linked from any page). It uses Firebase Authentication and Google Cloud Storage with Google-managed encryption at rest — not zero-knowledge/client-side encryption. It is unrelated to the PDF tools this policy otherwise describes, and no PDF tool ever contacts it.
-
-**CDN loading note:** Our processing libraries (pdf.js, jsPDF, mammoth.js, qpdf.js) load from **cdnjs.cloudflare.com** and/or **cdn.jsdelivr.net**. These CDNs may log IP addresses and request timestamps per their own policies. We do not control or receive those logs.
+### 2.4 CDN Loading
+Our processing libraries load from a single fixed CDN each: pdf.js, jsPDF, and mammoth.js from **cdnjs.cloudflare.com**, and qpdf.js from **cdn.jsdelivr.net**. These CDNs may log IP addresses and request timestamps per their own policies. We do not control or receive those logs.
 
 ---
 
