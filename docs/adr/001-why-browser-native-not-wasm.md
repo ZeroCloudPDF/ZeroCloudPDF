@@ -84,7 +84,7 @@ All other conversion and editing logic remains pure JavaScript.
 
 ### Negative / Mitigations
 - **Performance ceiling:** For documents above 50 MB, JS is slower than WASM would be. Mitigation: we optimize for the 90th percentile (documents under 50 MB) and use `OffscreenCanvas` + `requestIdleCallback` to keep the main thread responsive.
-- **Bundle size:** Processing libraries (`pdf.js`, `jsPDF`, `mammoth.js`) are loaded on-demand per tool via dynamic `import()`, not via deferred `<script>` tags on every page load. This ensures users only download the libraries they actually need for their current task.
+- **Bundle size:** Processing libraries (`pdf.js`, `jsPDF`, `mammoth.js`) are loaded on-demand per tool via dynamically injected `<script>` tags (`document.createElement("script")` + `appendChild`, promise-cached in `app.js`), not via deferred `<script>` tags on every page load. This is CDN lazy-loading, not ES module dynamic `import()` — the codebase uses no `import()` expressions. This ensures users only download the libraries they actually need for their current task.
 - **WASM exception for encryption:** The Protect/Unlock PDF tools use `qpdf.js` (WASM) for 256-bit AES encryption. This is a deliberate, documented exception — the module is loaded only when needed and auditable via source maps.
 - **Feature gaps:** For edge-case PDFs (certain embedded fonts, XFA forms), JS libraries may fail where C++ would succeed. We accept this trade-off and document known limitations transparently.
 
@@ -99,17 +99,15 @@ The decision is validated by the **5-Second Privacy Test**:
 
 If the tool works offline, no bytes traversed `eth0`. This test is impossible to pass with a server-side tool, and trivial to pass with our browser-native JS architecture.
 
-## 7. Related Decisions (Future)
+## 7. Related Decisions
 
-The following ADRs are planned but not yet written:
-
-- **ADR-002:** Client-Side-Only Architecture (no service worker network fallback)
-- **ADR-003:** Zero Server Contact Verification Methodology
+- [ADR-002: Client-Side-Only Architecture](002-client-side-only-architecture.md) (no service worker network fallback)
+- [ADR-003: Zero Server Contact Verification Methodology](003-zero-server-contact-verification.md)
 
 ## 8. Future Improvements
 
 This ADR has been superseded in part by the implementation of on-demand library loading and the documented WASM exception for encryption. See:
-- Dynamic `import()` implementation for per-tool library loading (completed)
+- On-demand `<script>` injection for per-tool library loading (completed)
 - `qpdf.js` integration for Protect/Unlock PDF tools (completed)
 
 ## 9. References
