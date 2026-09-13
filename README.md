@@ -75,29 +75,28 @@ Founder narrative: [Why I Had to Build My Own](https://zerocloudpdf.hashnode.dev
 
 ---
 
-## Current Tools (16 Total)
+## Current Tools (15 Total)
 
-### Core Conversion Tools
+### Core Conversion Tools (10)
 - **JPG to PDF** — Merge multiple images into a single PDF
 - **PNG to PDF** — Convert PNG images to PDF
-- **WEBP to PDF** — Convert WEBP images to PDF
+- **TIFF to PDF** — Convert TIFF images to PDF
+- **WEBP/Images to PDF** — Convert WEBP and other image formats via generic image-to-PDF tool
 - **PDF to JPG** — Extract pages as high-quality images
+- **PDF to PNG** — Extract pages as PNG images
 - **Merge PDF** — Combine multiple PDFs client-side
 - **Compress PDF** — Reduce file size with optimized settings
 - **Word to PDF** — Convert .docx without Microsoft Office
 - **HEIC to PDF** — Convert iPhone HEIC images (rarely supported elsewhere)
 
-### PDF Editing & Security
-- **Protect PDF** — Add password protection with 256-bit AES encryption (qpdf.js WASM)
-- **Unlock PDF** — Remove passwords from PDFs you own (qpdf.js WASM)
-- **Rotate PDF** — Rotate pages clockwise or counter-clockwise
+### PDF Editing & Security (4)
+- **Protect/Unlock PDF** — Add or remove password protection with 256-bit AES encryption (qpdf.js WASM)
 - **Delete PDF Pages** — Remove specific pages from a PDF
 - **Sign PDF** — Add digital signatures to PDF documents
 - **Redact PDF** — Permanently remove sensitive content from PDFs
 
-### Utilities
+### Utilities (1)
 - **Add Page Numbers** — Insert page numbers at custom positions
-- **Extract PDF Pages** — Pull out specific pages as a new PDF
 
 ---
 
