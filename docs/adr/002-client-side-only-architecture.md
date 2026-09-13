@@ -56,16 +56,17 @@ We do not use:
 Our offline capability is a **side effect**, not a feature.
 
 ### 4.1 Standard Browser HTTP Cache
-When a user first loads a tool page, the browser downloads these libraries and assets from CDN:
+When a user first loads a tool page, the browser downloads these libraries and assets from CDN on-demand (via dynamic `import()`):
 
 | Library / Asset | CDN Source | Cache Behavior |
 |---|---|---|
-| jsPDF 2.5.1 | cdnjs.cloudflare.com | Standard HTTP cache |
-| pdf.js 3.11.174 | cdnjs.cloudflare.com | Standard HTTP cache |
-| mammoth.js 1.6.0 | cdnjs.cloudflare.com | Standard HTTP cache |
-| html2canvas 1.4.1 | cdnjs.cloudflare.com | Standard HTTP cache (only when Word Image mode triggers load) |
-| Firebase 8.10.0 | gstatic.com | Standard HTTP cache |
+| jsPDF 2.5.1 | cdnjs.cloudflare.com or cdn.jsdelivr.net | Standard HTTP cache (loaded on-demand) |
+| pdf.js 3.11.174 | cdnjs.cloudflare.com or cdn.jsdelivr.net | Standard HTTP cache (loaded on-demand) |
+| mammoth.js 1.6.0 | cdnjs.cloudflare.com or cdn.jsdelivr.net | Standard HTTP cache (loaded on-demand) |
+| qpdf.js (WASM) | cdn.jsdelivr.net | Standard HTTP cache (loaded on-demand for Protect/Unlock only) |
 | Google Fonts | fonts.googleapis.com / fonts.gstatic.com | Standard HTTP cache |
+
+**Note:** Firebase libraries are no longer loaded for PDF tools. The Vault feature is unlisted and separate.
 
 If the user returns to the site (or keeps the tab open) while offline, and the browser cache has not expired or been cleared, the libraries and assets are served from cache and conversion proceeds normally.
 
