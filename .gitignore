@@ -1,1 +1,2 @@
-Nothing should be ignored based on the provided file changes. The changes only include markdown files (PRIVACY.md, SECURITY.md) which are source/config files and do not represent build artifacts, dependencies, or temporary files that should be ignored.
+# Documentation
+docs/adr/*.md
