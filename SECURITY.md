@@ -1,96 +1,114 @@
 # Security Policy — ZeroCloudPDF
 
-**Last updated:** 2026-05-28  
-**Scope:** All browser-native PDF conversion tools, the Vault (cloud storage layer), and the thumbnail generation pipeline.
+**Last updated:** 2026-07-25  
+**Scope:** All browser-native PDF conversion and editing tools.
 
 ---
 
 ## 1. Security Model: Browser-Native by Design
 
-ZeroCloudPDF processes **all** PDF conversions inside your browser using pure JavaScript.  
-No file ever leaves your device during conversion.
+ZeroCloudPDF processes **all** PDF conversions and editing operations inside your browser using pure JavaScript and WebAssembly (for encryption only).  
+No file ever leaves your device during any operation.
 
 | Component | Technology | Server Contact? |
 |---|---|---|
 | PDF rendering | Mozilla pdf.js 3.11.174 | ❌ None |
 | PDF generation | jsPDF 2.5.1 | ❌ None |
 | Word-to-PDF | mammoth.js 1.6.0 | ❌ None |
-| DOM-to-image (Word image mode) | html2canvas 1.4.1 | ❌ None |
-| HEIC decoding | Browser-native `createImageBitmap()` | ❌ None¹ |
+| PDF encryption/decryption | qpdf.js (WebAssembly) | ❌ None |
+| HEIC decoding | Browser-native `createImageBitmap()` (Safari/iOS only) | ❌ None¹ |
+| Image processing | Native Canvas, ImageBitmap, OffscreenCanvas APIs | ❌ None |
 
 ¹ Native HEIC decoding is supported on Safari and iOS only. Chrome and Firefox desktop do not natively decode HEIC; conversions may silently fail or produce blank output.
 
 **External dependencies:** Google Fonts (fonts.googleapis.com, fonts.gstatic.com) load on every page for typography. These requests may expose IP addresses and user agents to Google. They do not contain file data.
 
-**Verification:** Open DevTools → Network tab. Perform any conversion. You will see zero outbound requests containing file data. We call this the **Zero Server Contact Verification**.
+**Verification:** Open DevTools → Network tab. Perform any conversion or editing operation. You will see zero outbound requests containing file data. We call this the **Zero Server Contact Verification**.
+
+See [ADR-003: Zero Server Contact Verification Methodology](docs/adr/003-zero-server-contact-verification.md) for detailed audit instructions.
 
 ---
 
-## 2. Vault Security Architecture
+## 2. Protect/Unlock PDF Security Architecture
 
-The Vault is the **only** server-touching feature. It allows authenticated users to store original files and generated PDFs in cloud storage.
+The Protect PDF and Unlock PDF tools use **qpdf.js**, a WebAssembly port of the qpdf library, for cryptographic operations.
 
-### 2.1 Authentication
-- Firebase Auth (email/password or Google OAuth)
-- Session persistence: `SESSION` only
-- **Email verification is enforced.** Unverified accounts cannot access the Vault.
+### 2.1 Encryption Specifications
+- **Algorithm:** AES-256 in CBC mode
+- **Key derivation:** Industry-standard password-based key derivation
+- **Security level:** 256-bit encryption keys
+- **Compliance:** qpdf is widely used in production environments and has been audited for security
 
-### 2.2 Upload Flow
-1. Client requests a signed upload URL from our Cloud Run backend (`POST /get-upload-url`).
-2. Backend validates the Firebase ID token.
-3. Client `PUT`s the file **directly** to Google Cloud Storage via the signed URL.
-4. Files are stored at: `User/{uid}/original/{timestamp}-{filename}`
+### 2.2 How It Works
+1. User selects a PDF file in their browser
+2. qpdf.js WASM module loads from CDN (cdnjs.cloudflare.com or cdn.jsdelivr.net)
+3. Password is entered locally (never transmitted)
+4. Encryption/decryption occurs entirely in browser memory
+5. Output PDF is generated and downloaded directly to user's device
 
-### 2.3 Data-at-Rest Status
-| Question | Status | Note |
-|---|---|---|
-| Is Vault data encrypted at rest by ZeroCloudPDF? | **No.** | We rely on GCS default encryption (Google-managed keys). We do not apply client-side or server-side additional encryption before upload. |
-| Is Vault data encrypted in transit? | Yes. | All traffic is TLS 1.2+. |
-| Are files automatically deleted? | **No.** | No GCS lifecycle rules are configured. Files persist until the user deletes them via the Vault UI. |
-| Are thumbnails retained? | Yes. | Thumbnails and previews are generated and stored alongside originals. |
-
-### 2.4 Thumbnail Pipeline
-- `generate-thumbnail` Cloud Run service (`asia-south1`)
-- Downloads the **full original file** to `/tmp/` for processing
-- Temp files (`/tmp/thumb-*`, `/tmp/preview-*`) are **not explicitly cleaned up** and remain until the Cloud Run instance recycles
-- Only `originalTemp` is explicitly `unlinkSync`-ed
-
-### 2.5 Logging Policy
-- **Zero explicit logging** in the success path for upload/download/delete operations
-- No filenames, UIDs, file sizes, or content types are logged
-- Only `console.error(err)` in catch blocks for debugging
-- Thumbnail service logs emoji-only success indicators (e.g., "✅ Image processed") and `console.error` on failure
-
-### 2.6 Known Risk: Orphaned Files
-If a user deletes their Firebase account **without** first deleting Vault files via the UI, the GCS objects become permanent orphans. There is currently no automated cleanup mechanism.
+### 2.3 Security Guarantees
+| Question | Answer |
+|---|---|
+| Are passwords transmitted to any server? | **No.** Passwords never leave the browser. |
+| Is the WASM module auditable? | Yes. Source maps and unminified versions available. |
+| Are temporary files created on servers? | **No.** All processing is in-browser. |
+| Can ZeroCloudPDF access encrypted files? | **No.** We have zero access to any files. |
 
 ---
 
-## 3. What We Do NOT Do
+## 3. Library Loading & CDN Security
+
+### 3.1 CDN Sources
+All processing libraries load from trusted, reputable CDNs:
+
+| Library | Primary CDN | Fallback CDN |
+|---------|-------------|--------------|
+| pdf.js | cdnjs.cloudflare.com | cdn.jsdelivr.net |
+| jsPDF | cdnjs.cloudflare.com | cdn.jsdelivr.net |
+| mammoth.js | cdnjs.cloudflare.com | cdn.jsdelivr.net |
+| qpdf.js | cdnjs.cloudflare.com | cdn.jsdelivr.net |
+
+### 3.2 Loading Strategy
+- Libraries load via **deferred script tags** (`defer` attribute)
+- Each tool loads its required libraries **on-demand** (not all at once)
+- No dynamic `import()` or ES module loading for core libraries
+- No Service Worker registration
+- No PWA manifest
+
+### 3.3 Subresource Integrity (SRI)
+We recommend implementing SRI hashes for all CDN-loaded libraries to prevent tampering. Check our deployed site for current SRI implementations.
+
+---
+
+## 4. What We Do NOT Do
 
 To avoid scope confusion, we explicitly state:
 
-- ❌ **No WebAssembly** in any processing path
-- ❌ **No Service Worker** — no `sw.js`, no `manifest.json`, no PWA registration
-- ❌ **No ES module dynamic `import()`** — jsPDF, pdf.js, and mammoth.js load via deferred script tags on every page load. html2canvas loads dynamically on demand when Word Image mode is selected.
-- ❌ **No client-side encryption** before Vault upload
-- ❌ **No server-side PDF processing** for conversion tools
+- ❌ **No server-side PDF processing** for any conversion or editing tools
+- ❌ **No file uploads** to any server (no Firebase, no GCS, no Cloud Run)
+- ❌ **No user authentication** systems (no Firebase Auth, no OAuth)
+- ❌ **No cloud storage** capabilities
+- ❌ **No thumbnail generation services**
+- ❌ **No account systems** or user data collection
+- ❌ **No client-side encryption before upload** (because there is no upload)
+- ❌ **No logging** of filenames, file sizes, or content types
+- ❌ **No error telemetry** that transmits file data
 
 ---
 
-## 4. Supported Versions
+## 5. Supported Versions
 
 | Version | Supported |
 |---|---|
-| Latest `main` branch | ✅ |
-| Any pinned release | ✅ |
+| Latest deployed version on zerocloudpdf.com | ✅ |
+| Any pinned release tag | ✅ |
 | Older commits | ❌ |
 
 We do not maintain LTS branches. Always use the latest deployed version.
 
 ---
 
-## 5. Reporting a Vulnerability
+## 6. Reporting a Vulnerability
 
 **Please do NOT open public issues for security bugs.**
 
@@ -112,23 +130,25 @@ We follow a **coordinated disclosure** model. We do not offer a bug bounty progr
 
 ---
 
-## 6. Security Checklist for Self-Audit
+## 7. Security Checklist for Self-Audit
 
 If you are evaluating ZeroCloudPDF for sensitive documents (bank statements, passports, medical records, school certificates), verify:
 
-- [ ] You are using the conversion tools **without logging into the Vault** (zero server contact)
-- [ ] If using the Vault, your email is verified and you understand files are stored unencrypted at rest
-- [ ] You have reviewed the Network tab in DevTools during conversion
-- [ ] You have read [ADR-001: Why Browser-Native, Not WebAssembly](docs/adr/001-why-browser-native-not-wasm.md)
-- [ ] You have read [ADR-003: Zero Server Contact Verification Methodology](docs/adr/003-zero-server-contact-verification.md) *(coming soon)*
+- [ ] You are using the tools **without any login requirement** (zero server contact)
+- [ ] You have reviewed the Network tab in DevTools during conversion/editing
+- [ ] You understand Protect/Unlock uses qpdf.js WASM with 256-bit AES encryption
+- [ ] You have read [ADR-001: Why Browser-Native, Not WebAssembly](docs/adr/001-why-browser-native-not-wasm.md) (note: Protect/Unlock is the exception)
+- [ ] You have read [ADR-002: Client-Side Only Architecture](docs/adr/002-client-side-only-architecture.md)
+- [ ] You have read [ADR-003: Zero Server Contact Verification Methodology](docs/adr/003-zero-server-contact-verification.md)
 
 ---
 
-## 7. Credits & References
+## 8. Credits & References
 
 - Mozilla pdf.js Security: https://github.com/mozilla/pdf.js/security
 - jsPDF: https://github.com/parallax/jsPDF
-- Google Cloud Storage Encryption: https://cloud.google.com/storage/docs/encryption
+- qpdf.js: https://github.com/jsejcksn/qpdf.js
+- qpdf Documentation: https://qpdf.readthedocs.io/
 
 ---
 
