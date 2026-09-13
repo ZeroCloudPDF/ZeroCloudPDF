@@ -26,9 +26,10 @@ ZeroCloudPDF processes all files **inside your browser** using standard JavaScri
 | [pdf.js](https://github.com/mozilla/pdf.js) | PDF parsing, rendering, and structure analysis |
 | [jsPDF](https://github.com/parallax/jsPDF) | PDF generation from images, text, and HTML |
 | [mammoth.js](https://github.com/mwilliamson/mammoth.js) | Word document (.docx) to HTML/PDF conversion |
+| [qpdf.js](https://github.com/jsejcksn/qpdf.js) | PDF encryption and decryption (Protect/Unlock) |
 | Native Browser APIs | Image decoding (`Canvas`, `ImageBitmap`, `OffscreenCanvas`) |
 
-No WebAssembly. No serverless functions. No hidden WebSocket streams. Just libraries you can `npm install` and audit yourself.
+Processing libraries load on-demand per tool via deferred script tags from trusted CDNs (jsDelivr and Cloudflare).
 
 ---
 
@@ -74,29 +75,42 @@ Founder narrative: [Why I Had to Build My Own](https://zerocloudpdf.hashnode.dev
 
 ---
 
-## Current Tools
+## Current Tools (16 Total)
 
+### Core Conversion Tools
 - **JPG to PDF** — Merge multiple images into a single PDF
+- **PNG to PDF** — Convert PNG images to PDF
+- **WEBP to PDF** — Convert WEBP images to PDF
 - **PDF to JPG** — Extract pages as high-quality images
 - **Merge PDF** — Combine multiple PDFs client-side
-- **Compress PDF** — Reduce file size with iPhone-optimized settings
+- **Compress PDF** — Reduce file size with optimized settings
 - **Word to PDF** — Convert .docx without Microsoft Office
 - **HEIC to PDF** — Convert iPhone HEIC images (rarely supported elsewhere)
 
-**Roadmap:** Rotate PDF, Edit PDF text
+### PDF Editing & Security
+- **Protect PDF** — Add password protection with 256-bit AES encryption (qpdf.js WASM)
+- **Unlock PDF** — Remove passwords from PDFs you own (qpdf.js WASM)
+- **Rotate PDF** — Rotate pages clockwise or counter-clockwise
+- **Delete PDF Pages** — Remove specific pages from a PDF
+- **Sign PDF** — Add digital signatures to PDF documents
+- **Redact PDF** — Permanently remove sensitive content from PDFs
+
+### Utilities
+- **Add Page Numbers** — Insert page numbers at custom positions
+- **Extract PDF Pages** — Pull out specific pages as a new PDF
 
 ---
 
-## Why Not WASM?
+## Why We Use WebAssembly for Protect/Unlock
 
-We deliberately chose **vanilla JavaScript** over WebAssembly:
+We deliberately chose **vanilla JavaScript** for most tools, but use **qpdf.js (WebAssembly)** for Protect and Unlock PDF:
 
-- **Auditability:** Source maps and unminified libraries are inspectable in DevTools
-- **No compilation step:** Faster iteration, simpler debugging
-- **Universal compatibility:** Works in every modern browser without `.wasm` MIME type headaches
+- **Cryptographic security:** 256-bit AES encryption requires battle-tested implementations
+- **Industry standard:** qpdf is widely audited and used in production environments
+- **Performance:** WASM provides near-native speed for encryption operations
 - **Same privacy guarantee:** Your file still never leaves your device
 
-The privacy claim is equally strong—and now it is **falsifiable** by any developer in 30 seconds.
+All other tools run on pure JavaScript for maximum auditability and debugging simplicity.
 
 ---
 
@@ -107,6 +121,8 @@ This repository currently serves as the public documentation and architecture hu
 - Additional format support
 - Performance benchmarks
 - Privacy audit methodologies
+
+See our [Architecture Decision Records (ADRs)](docs/adr/) for technical rationale behind key design choices.
 
 ---
 
