@@ -52,25 +52,25 @@ Load `https://zerocloudpdf.com` (or the relevant tool page). Observe the Network
 | `jspdf/2.5.1/jspdf.umd.min.js` | PDF generation library (loaded on-demand) | No |
 | `pdf.js/3.11.174/pdf.min.js` | PDF rendering library (loaded on-demand) | No |
 | `mammoth/1.6.0/mammoth.browser.min.js` | Word-to-PDF library (loaded on-demand) | No |
-| `qpdf.js/qpdf.min.js` + `.wasm` | **Only for Protect/Unlock PDF tools** | No |
+| `@neslinesli93/qpdf-wasm@0.3.0/dist/qpdf.js` + `.wasm` | **Only for Protect/Unlock PDF tools** | No |
 
 **What to verify:**
-- Libraries are loaded on-demand via dynamic `import()` when a tool is first used, not on initial page load.
+- Libraries are loaded on-demand via injected `<script>` tags when a tool is first used, not on initial page load.
 - `qpdf.js` (WASM) appears **only** when accessing the Protect/Unlock PDF tool.
 - No request contains file data, file metadata, or conversion parameters.
-- Firebase libraries are **not** loaded for PDF tools (Vault is separate and unlisted).
+- Firebase libraries are **not** loaded for PDF tool code paths.
 
 ---
 
 ### 3.3 Step 2: Isolate the Conversion
 
-Stay on the public tool page (Vault is unlisted and separate).
+Stay on the public tool page.
 
 Select a tool and upload a test file. Watch the Network tab during the entire conversion.
 
 **What you should see:**
 - **Zero new network requests** containing your file.
-- Libraries may load on-demand via `import()` if this is the first time using that tool.
+- Libraries may load on-demand via an injected `<script>` tag if this is the first time using that tool.
 - The only new requests may be:
   - GA4 `collect` pings (anonymous page metrics, no file content)
 
@@ -129,23 +129,35 @@ For developers who want to verify at the source level, inspect these functions i
 | `finishPdf()` | Creates `URL.createObjectURL(blob)`. Triggers download via `anchor.click()` (Safari), `window.open()` (Chrome/Firefox), or a persistent download button (iOS). No `fetch()`. |
 | `initPdfTool()` | Dispatches all image-to-PDF, compress, merge, Word, and PDF-to-image conversions based on the active ribbon tab or current pathname. No `fetch()`. |
 
-**Global check:** Search `app.js` for `fetch(`, `XMLHttpRequest`, `WebSocket(`. There should be **zero** such calls in PDF tool code paths. The Vault feature (unlisted, separate) may contain `fetch()` calls for GCS operations, but no PDF tool interacts with it.
+**Global check:** Search `app.js` for `fetch(`, `XMLHttpRequest`, `WebSocket(`. There should be **zero** such calls in PDF tool code paths. Some `fetch()` calls exist elsewhere in `app.js` for unrelated account/storage functionality, but none are reachable from any PDF tool code path.
 
-**WASM verification:** For Protect/Unlock PDF tools, search for `qpdf` imports. The WASM module is loaded via dynamic `import()` only when that tool is accessed.
+**WASM verification:** For Protect/Unlock PDF tools, search for `qpdf` references in `qpdf-worker.js`. The WASM module is loaded via `importScripts()` inside the Web Worker only when that tool is accessed.
 
 ---
 
 ## 4. Library Loading Verification
 
-### 4.1 Dynamic Imports (On-Demand Loading)
-Libraries are now loaded via dynamic `import()` only when a tool is first used:
+### 4.1 On-Demand Script Injection (Lazy Loading)
+Libraries are loaded by dynamically injecting `<script>` tags the first time a tool is used — not ES module dynamic `import()`, which this codebase does not use:
 
 ```javascript
-// Example: Load jsPDF only when needed
-const { jsPDF } = await import('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/+esm');
+// app.js — the actual loader pattern (simplified)
+function _injectScript(src, errMsg){
+  return new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = () => reject(new Error(errMsg));
+    document.body.appendChild(s);
+  });
+}
+```
 
-// Example: Load qpdf.js only for Protect/Unlock PDF
-const qpdf = await import('https://cdn.jsdelivr.net/npm/qpdf-wasm@1.0.0/+esm');
+The Protect/Unlock PDF tool follows the same on-demand principle, but inside its Web Worker (`qpdf-worker.js`), using `importScripts()` rather than a DOM `<script>` tag:
+
+```javascript
+// qpdf-worker.js
+importScripts("https://cdn.jsdelivr.net/npm/@neslinesli93/qpdf-wasm@0.3.0/dist/qpdf.js");
 ```
 
 **Benefits:**
@@ -154,9 +166,11 @@ const qpdf = await import('https://cdn.jsdelivr.net/npm/qpdf-wasm@1.0.0/+esm');
 - Clearer audit trail in Network tab (library load = tool usage)
 
 ### 4.2 CDN Sources
-| Library | Primary CDN | Fallback CDN |
-|---|---|---|
-| jsPDF | cdnjs.cloudflare.com | cdn.jsdelivr.net |
-| pdf.js | cdnjs.cloudflare.com | cdn.jsdelivr.net |
-| mammoth.js | cdnjs.cloudflare.com | cdn.jsdelivr.net |
-| qpdf.js (WASM) | cdn.jsdelivr.net | N/A |
+| Library | CDN Source |
+|---|---|
+| jsPDF | cdnjs.cloudflare.com |
+| pdf.js | cdnjs.cloudflare.com |
+| mammoth.js | cdnjs.cloudflare.com |
+| qpdf-wasm (WASM) | cdn.jsdelivr.net |
+
+Each library is loaded from exactly one hardcoded URL in `app.js` (or `qpdf-worker.js` for qpdf-wasm) — there is no primary/fallback CDN mechanism implemented.

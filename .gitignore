@@ -1,4 +1,8 @@
-```
 # Documentation
 docs/adr/*.md
-```
+
+Wait, that's not right - the modified files are documentation files that should be tracked. Let me reconsider.
+
+Since only documentation files (.md) are being modified and these should typically be tracked in version control, no changes to .gitignore are needed.
+
+(empty)

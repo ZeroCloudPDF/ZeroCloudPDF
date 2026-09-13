@@ -56,17 +56,17 @@ We do not use:
 Our offline capability is a **side effect**, not a feature.
 
 ### 4.1 Standard Browser HTTP Cache
-When a user first loads a tool page, the browser downloads these libraries and assets from CDN on-demand (via dynamic `import()`):
+When a user first loads a tool page, the browser downloads these libraries and assets from CDN on-demand, via dynamically injected `<script>` tags (`document.createElement("script")` + `appendChild`, promise-cached in `app.js` — not ES module dynamic `import()`, which this codebase does not use):
 
 | Library / Asset | CDN Source | Cache Behavior |
 |---|---|---|
-| jsPDF 2.5.1 | cdnjs.cloudflare.com or cdn.jsdelivr.net | Standard HTTP cache (loaded on-demand) |
-| pdf.js 3.11.174 | cdnjs.cloudflare.com or cdn.jsdelivr.net | Standard HTTP cache (loaded on-demand) |
-| mammoth.js 1.6.0 | cdnjs.cloudflare.com or cdn.jsdelivr.net | Standard HTTP cache (loaded on-demand) |
-| qpdf.js (WASM) | cdn.jsdelivr.net | Standard HTTP cache (loaded on-demand for Protect/Unlock only) |
+| jsPDF 2.5.1 | cdnjs.cloudflare.com | Standard HTTP cache (loaded on-demand) |
+| pdf.js 3.11.174 | cdnjs.cloudflare.com | Standard HTTP cache (loaded on-demand) |
+| mammoth.js 1.6.0 | cdnjs.cloudflare.com | Standard HTTP cache (loaded on-demand) |
+| qpdf-wasm (WASM) | cdn.jsdelivr.net | Standard HTTP cache (loaded on-demand for Protect/Unlock only, via `importScripts()` inside `qpdf-worker.js`) |
 | Google Fonts | fonts.googleapis.com / fonts.gstatic.com | Standard HTTP cache |
 
-**Note:** Firebase libraries are no longer loaded for PDF tools. The Vault feature is unlisted and separate.
+**Note:** Firebase libraries are no longer loaded for PDF tools — they load lazily, only when needed.
 
 If the user returns to the site (or keeps the tab open) while offline, and the browser cache has not expired or been cleared, the libraries and assets are served from cache and conversion proceeds normally.
 
