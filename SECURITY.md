@@ -80,19 +80,18 @@ We recommend implementing SRI hashes for all CDN-loaded libraries to prevent tam
 
 ---
 
-## 4. What We Do NOT Do
+## 4. What We Do NOT Do (For Any PDF Tool)
 
-To avoid scope confusion, we explicitly state:
+To avoid scope confusion, every statement below applies to all PDF conversion and editing tools:
 
-- ❌ **No server-side PDF processing** for any conversion or editing tools
-- ❌ **No file uploads** to any server (no Firebase, no GCS, no Cloud Run)
-- ❌ **No user authentication** systems (no Firebase Auth, no OAuth)
-- ❌ **No cloud storage** capabilities
-- ❌ **No thumbnail generation services**
-- ❌ **No account systems** or user data collection
-- ❌ **No client-side encryption before upload** (because there is no upload)
-- ❌ **No logging** of filenames, file sizes, or content types
+- ❌ **No server-side PDF processing** for any conversion or editing tool
+- ❌ **No file uploads** for any PDF tool (no Firebase, no GCS, no Cloud Run)
+- ❌ **No account requirement** to use any PDF tool
+- ❌ **No client-side encryption before upload** (because no PDF tool uploads anything)
+- ❌ **No logging** of filenames, file sizes, or content types by any PDF tool
 - ❌ **No error telemetry** that transmits file data
+
+**Note:** zerocloudpdf.com also runs a separate, unlisted legacy feature (a private cloud vault) that does use Firebase Authentication and Google Cloud Storage for its own account holders. It is not linked anywhere on the site, is not under active development, and no PDF tool interacts with it in any way.
 
 ---
 

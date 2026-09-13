@@ -1,7 +1,7 @@
 # ZeroCloudPDF
 
 &gt; Privacy-first PDF tools that run entirely in your browser.  
-&gt; Zero uploads. Zero servers. Zero trust required.
+&gt; Zero uploads, zero servers for every conversion or edit.
 
 [![Website](https://img.shields.io/badge/Website-zerocloudpdf.com-00b894?style=flat-square)](https://zerocloudpdf.com)
 [![German](https://img.shields.io/badge/Article-Deutsch-brightgreen?style=flat-square)](https://zerocloudpdf.blogspot.com/2026/05/zerocloudpdf-vs-smallpdf-ilovepdf-pdf24.html)
@@ -56,6 +56,8 @@ If it works offline, your file never touched `eth0`. Try that on any competitor.
 | PDF24 (Web) | ✅ Yes | German server | Temporary | No |
 | Online2PDF | ✅ Yes | German server | Temporary | No |
 | **ZeroCloudPDF** | **❌ Never** | **Your browser** | **Instant discard** | **Never** |
+
+*Applies to all PDF conversion and editing tools. A separate, unlisted legacy account feature exists outside this comparison's scope.*
 
 German localization: [Deutschsprachiger Vergleich](https://zerocloudpdf.blogspot.com/2026/05/zerocloudpdf-vs-smallpdf-ilovepdf-pdf24.html)
 
